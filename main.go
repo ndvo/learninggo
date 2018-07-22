@@ -3,9 +3,9 @@ package main
 import (
 	"compress/gzip"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/gob"
 	"encoding/json"
-	"encoding/base64"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
@@ -18,16 +18,14 @@ import (
 	"time"
 )
 
-
-
-
-// Folders 
+// Folders
 var folders map[string]string = map[string]string{
 	"app":      "app",
 	"api":      "api",
 	"css":      "css",
 	"users":    "users",
 	"content":  "content",
+	"delta":    "delta",
 	"template": "api/templates"}
 
 // init creates the folder structure and databases necessary for dom
@@ -35,13 +33,13 @@ func init() {
 	println("Criando os diretórios necessários:")
 	for _, f := range folders {
 		println("\tCriando " + f)
-		os.MkdirAll(f, 0664)
+		os.MkdirAll(f, 0775)
 	}
 	testuser := &Usuario{
 		saver:    saver{addr: "nelson"},
 		username: "nelson",
 		password: []byte("teste de senha"),
-		email:    "nelson@ocastudios.com",
+		email:    "teste+teste@ocastudios.com",
 	}
 	println("Teste de usuario")
 	println(testuser.addr)
@@ -74,21 +72,21 @@ func (s *saver) save() error {
 	return nil
 }
 
-type session struct{
+type session struct {
 	Usuario
 	sid string
 }
+
 // createID creates a session ID from system random and returns a sessionIDCreate a new session id
-func (s *session) createID()  {	
+func (s *session) createID() {
 	//32 bytes == 256 bits
 	b := make([]byte, 32)
-	_ , err := rand.Read(b)
-	if err!=nil{
+	_, err := rand.Read(b)
+	if err != nil {
 		println(err)
 	}
 	s.sid = base64.URLEncoding.EncodeToString(b)
 }
-
 
 type Imobiliaria struct {
 	*saver
@@ -144,8 +142,8 @@ type Page struct {
 }
 
 func (p *Page) save() {
-	go ioutil.WriteFile("content/"+p.Title+".html", []byte(p.Body), 0600)
-	go ioutil.WriteFile("delta/"+p.Title+".delta", []byte(p.Delta), 0600)
+	go ioutil.WriteFile("content/"+p.Title, []byte(p.Body), 0666)
+	go ioutil.WriteFile("delta/"+p.Title+".delta", []byte(p.Delta), 0666)
 }
 
 type PageInfo struct {
@@ -171,17 +169,19 @@ func basename(fileName string) string {
 }
 
 func editPage(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("user")
-	var user string
-	if err != nil {
-		user = cookie.Value
-	} else {
-		user = ""
-	}
 	title := strings.Split(r.URL.Path, "/")[2]
-	page, err := loadPage(title, user)
+	println("Editing Page " + title)
+	//cookie, err := r.Cookie("user")
+	//var user string
+	//if err != nil {
+	//	user = cookie.Value
+	//} else {
+	//	user = ""
+	//}
+	//println("Afer knowing cookie")
+	page, err := loadPage(title, "")
 	if err != nil {
-		page = &Page{Title: title, Body: "", Delta: "", User: user}
+		page = &Page{Title: title, Body: "", Delta: "", User: "TODO"}
 	}
 	t, _ := template.ParseFiles("api/templates/edit_page.html")
 	t.Execute(w, page)
@@ -196,7 +196,7 @@ func loadPage(title string, user string) (*Page, error) {
 	} else {
 		delta_string = string(delta)
 	}
-	body, err := ioutil.ReadFile("content/" + title + ".html")
+	body, err := ioutil.ReadFile("content/" + title)
 	var body_string template.HTML
 	if err != nil {
 		body_string = ""
@@ -251,6 +251,7 @@ func listContent() []PageInfo {
 			arq.Size(),
 			arq.ModTime(),
 		}
+		println(arq.Name())
 		pages = append(pages, p)
 	}
 	return pages
@@ -296,9 +297,7 @@ type Profile struct {
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
-	print("\nAPI REQUEST\n")
-	print("listcontent:")
-	print(len(listContent()))
+	print("\nAPI REQUEST: list content \n")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(listContent())
 }
@@ -351,9 +350,6 @@ func loginForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-
-
 func main() {
 	http.HandleFunc("/", viewPage)
 	http.HandleFunc("/knock-knock/", loginForm)
@@ -362,7 +358,7 @@ func main() {
 	http.HandleFunc("/save/", savePage)
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("app"))))
-	http.Handle("/vc_components/", http.StripPrefix("/vc_components/", http.FileServer(http.Dir("vc_components"))))
+	http.Handle("/vc_components/", http.StripPrefix("/vc_components/", http.FileServer(http.Dir("app/vc_components"))))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 	println("Server is up and running.")
 }

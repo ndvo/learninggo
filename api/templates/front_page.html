@@ -6,31 +6,49 @@
 <body>
 <header>
 	<vc>nav</vc>
+
 </header>
 <main>
 	<h1>Bem vindo</h1>
-  <article id="list-of-articles"></article>
+  <article style="display:none" id="list-of-articles"></article>
+  <progress style="display:block;margin: 5em auto; width: 25%"id="loading"></progress>
 </main>
 	<script src="/app/vanilla_components/vanilla_components.js" ></script>
   <script>
-function buildTable(){
-    var articleList = document.getElementById("list-of-articles");
-    xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "/api/", false);
-    xhttp.send();
-    var articleData = JSON.parse(xhttp.responseText);
-    for (var i = 0; i<articleData.length; i++){
-      articleList.insertAdjacentHTML("beforeend",
-          '<vc $nome="'+articleData[i].Name+
-            '" $modtime="'+articleData[i].ModTime+
-            '" $size="'+articleData[i].Size+
-          '">article</vc>' );
-    }
-    console.log(articleList.innerHTML);
-    var vcArticles = new VCSearch(articleList);
-    vcArticles.loadComponent();
+function get(url) {
+  return new Promise(function(resolve, reject) {
+    var req = new XMLHttpRequest();
+    req.open('GET', url);
+    req.onload = function() {
+      if (req.status == 200) {
+        resolve(req.response);
+      }
+      else {
+        reject(Error(req.statusText));
+      }
+    };
+    req.onerror = function() {
+      reject(Error("Network Error"));
+    };
+    req.send();
+  });
 }
-buildTable();
+var articleList = document.getElementById("list-of-articles");
+get("/api/").then(function(response){
+  var articleData = JSON.parse(response);
+  for (var i = 0; i<articleData.length; i++){
+    articleList.insertAdjacentHTML("beforeend",
+      '<vc $nome="'+articleData[i].Name+
+      '" $modtime="'+articleData[i].ModTime+
+      '" $size="'+articleData[i].Size+
+      '">article</vc>' );
+  }
+  var vcArticles = new VCSearch(articleList);
+  vcArticles.loadComponent();
+}).then(function(){
+    document.getElementById("list-of-articles").style.display = "block";
+    document.getElementById("loading").style.display = "none";
+});
   </script>
 </body>
 </html>

@@ -1,58 +1,44 @@
 digraph G{
-  subgraph cluster_frontend{
-    label="Aplicação Frontend"
-    view_content
-    list_content
-    form_content
-    client_validation
-
+  subgraph cluster_funcionalities{
+    subgraph cluster_endclient{
+      label="End Client"
+        main_view->item_select->item_view
+        item_select->item_compare
+        item_select->item_share
+        item_view->item_share
+        item_select->item_list_view
+        item_list_view->item_list_save
+        item_list_view->item_list_delete
+        item_list_view->item_list_share
+        item_select->item_selected_comment
+        item_list_view->item_list_comment
+    }
+    subgraph cluster_seller{
+      label="Seller"
+      item_create->item_edit->item_delete
+      item_create->item_view
+      item_create->main_view
+      item_view->item_stats
+    }
+    subgraph cluster_integrator{
+      label="Integrator"
+        bulk_create_item->item_view
+        bulk_create_item->main_view
+        item_create->bulk_edit_item
+        item_view->bulk_item_stats
+    }
   }
-  subgraph cluster_backend{
-    label="Aplicação Backend"
-    server_validation
-    save
+  subgraph cluster_system_workflow{
+    subgraph cluster_client{
+      request
+      vc_template_request
+      data_request
+    }
+    subgraph cluster_server{
+      main_template_response
+      vc_template_response
+      data_response
+    }
+    request->main_template_response->vc_template_request->vc_template_response->data_request->data_response
   }
-  formulario->ajax->validacao->save
 }
-//CadastraImovel
-//CadastraCondominio
-//ExcluiImovel
-//
-//
-//Usuario [shape="box"];
-//Condominio [shape="box"];
-//Imovel [shape="box"];
-//Anuncio [shape="box"];
-//
-//Agente->Imobiliaria
-//
-//CadastraAgente->Agente
-//Agente->CadastraImovel
-//Agente->ExcluiImovel
-//
-//
-//Login->Usuario
-//
-//Usuario->CadastraAgente
-//subgraph cluster_delegacao{
-//  label="Delegação de Funções"
-//  CadastraAgente
-//  Agente [shape="box"];
-//}
-//
-//subgraph cluster_fluxo{
-//	label="Fluxo Usuário"
-//	CadastraImovel->Imovel->ExcluiImovel
-//	CadastraImovel->Anuncio->InativaAnuncio->ReativaAnuncio
-//  Imovel->Condominio
-//  Agente->CadastraCondominio->Condominio
-//}
-//
-//Usuario->CadastraImobiliaria
-//subgraph cluster_imobiliaria{
-//  label="Fluxo Imobiliária"
-//  Imobiliaria [shape="box"];
-//  CadastraImobiliaria->Imobiliaria
-//}
-//
-//}
