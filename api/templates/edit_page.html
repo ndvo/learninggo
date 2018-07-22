@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<head>
+<title>Editando "{{.Title}}"</title>
+<link rel="stylesheet" type="text/css" href="/css/main.css">
+<link rel="stylesheet" type="text/css" href="/css/edit.css">
+<link rel="stylesheet" type="text/css" href="/app/quill/quill.snow.css">
+</head>
+<body>
+<header>
+  <vc>nav</vc>
+</header>
+
+<article id="editor">
+</article>
+
+<script src="/app/vanilla_components/vanilla_components.js" ></script>
+<script src="/app/quill/quill.min.js"></script>
+<script>
+  var quill = new Quill('#editor',{
+    modules: {
+      toolbar: {
+        container: [
+          ['documentsave'],
+          [{header:[1,2,3,false]}],
+          ['bold','italic','underline'],
+         ],
+        handlers: {
+          'documentsave': function(){
+            var range = quill.getSelection();
+            quilltext = this.quill.getText();
+            quilldelta = JSON.stringify(this.quill.editor.getDelta());
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/save/{{.Title}}', true);
+            xhr.onload = function(){
+              alert(xhr.response)
+            }
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send('body='+this.quill.root.innerHTML+'&delta='+quilldelta);
+          },
+        }
+      }
+    },
+    theme: 'snow'
+  });
+  var delta = "{{ .Delta }}";
+  var puretext = "{{ .Body }}";
+  if (delta){
+    quill.setContents(JSON.parse(delta));
+  }else{
+    quill.setContents({"ops":[{"insert": puretext}]});
+  }
+  var css = document.createElement("style");
+  css.type="text/css";
+  css.innerHTML = `
+  .ql-documentsave:before{
+    content: 'Save';
+  }
+  `;
+  document.head.appendChild(css);
+</script>
+</body>
+</html>

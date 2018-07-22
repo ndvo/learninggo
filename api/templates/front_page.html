@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+	<title>Conteúdo Disponível</title>
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+</head>
+<body>
+<header>
+	<vc>nav</vc>
+</header>
+<main>
+	<h1>Bem vindo</h1>
+  <article id="list-of-articles"></article>
+</main>
+	<script src="/app/vanilla_components/vanilla_components.js" ></script>
+  <script>
+function buildTable(){
+    var articleList = document.getElementById("list-of-articles");
+    xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/api/", false);
+    xhttp.send();
+    var articleData = JSON.parse(xhttp.responseText);
+    for (var i = 0; i<articleData.length; i++){
+      articleList.insertAdjacentHTML("beforeend",
+          '<vc $nome="'+articleData[i].Name+
+            '" $modtime="'+articleData[i].ModTime+
+            '" $size="'+articleData[i].Size+
+          '">article</vc>' );
+    }
+    console.log(articleList.innerHTML);
+    var vcArticles = new VCSearch(articleList);
+    vcArticles.loadComponent();
+}
+buildTable();
+  </script>
+</body>
+</html>
