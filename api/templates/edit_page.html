@@ -23,14 +23,22 @@
           ['documentsave'],
           [{header:[1,2,3,false]}],
           ['bold','italic','underline'],
+	  [{'list':'ordered'}, {'list':'bullet'}],
+	  ['link'],
+	  ['clean'],
          ],
         handlers: {
           'documentsave': function(){
+            var default_name = {{.Title}}
+            var filename = prompt("File name:");
+	    if (!filename){
+	    	filename = default_name
+	    }
             var range = quill.getSelection();
             quilltext = this.quill.getText();
             quilldelta = JSON.stringify(this.quill.editor.getDelta());
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", '/save/{{.Title}}', true);
+            xhr.open("POST", '/save/'+filename, true);
             xhr.onload = function(){
               alert(xhr.response)
             }

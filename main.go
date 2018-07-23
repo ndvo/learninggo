@@ -241,6 +241,7 @@ func viewPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// listContent retorna uma lista de informações básicas dos conteúdos cadastrados
 func listContent() []PageInfo {
 	pages := []PageInfo{}
 	arquivos, _ := ioutil.ReadDir("content")
@@ -257,6 +258,7 @@ func listContent() []PageInfo {
 	return pages
 }
 
+// frontPage cria a página inicial
 func frontPage(w http.ResponseWriter, r *http.Request) {
 	arquivos, err := ioutil.ReadDir("content")
 	if err == nil {
@@ -280,6 +282,7 @@ func frontPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// savePage salva um documento usando o Título como nome do documento
 func savePage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		title := strings.Split(r.URL.Path, "/")[2]
@@ -287,7 +290,6 @@ func savePage(w http.ResponseWriter, r *http.Request) {
 		p := &Page{Title: title, Body: body, Delta: r.FormValue("delta")}
 		p.save()
 		fmt.Fprint(w, "documento salvo")
-		//http.Redirect(w,r,"/"+title, http.StatusFound)
 	}
 }
 
