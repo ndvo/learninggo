@@ -1,4 +1,8 @@
 digraph G{
+  subgraph cluster_workflow{
+    request->check_type->check_user->type_access->field_check->field_access->retrieve->serialize->deliver;
+   
+  }
   subgraph cluster_funcionalities{
     subgraph cluster_endclient{
       label="End Client"

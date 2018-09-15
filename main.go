@@ -106,18 +106,28 @@ type Anuncio struct {
 	*saver
 }
 
+type Foto struct{
+	Url string
+	Content string
+	Fileformat string
+	Size int
+	Descrição string
+}
+
 type Imovel struct {
 	*saver
-	tipo        string
-	endereço    Endereco
-	preço       string
-	dir         string
-	imobiliaria Imobiliaria
-	vizinhanca  string
+	Tipo        string
+	Endereço    Endereco
+	Preço       string
+	Dir         string
+	Imobiliaria Imobiliaria
+	Vizinhanca  string
+	Fotos	Foto
+	Destaque int
 }
 
 type Endereco struct {
-	cep, estado, cidade, bairro, rua, latitude, longitude, descritivo string
+	Cep, Estado, Cidade, Bairro, Rua, Latitude, Longitude, Descritivo string
 }
 
 type Usuario struct {
@@ -241,6 +251,58 @@ func viewPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+func imoveisList(w http.ResponseWriter, r *http.Request){
+	imoveis:= []Imovel{
+		{
+			Tipo: "casa",
+			Endereço: Endereco{
+				Rua: "QSB 14 L 37",
+			},
+			Preço: "R$ 200.000",
+			Fotos: Foto{
+				Url: "http://www.plantasdecasas.com/wp-content/uploads/2017/07/planta-fachada-casa-115-fr-AG.jpg",
+				Descrição: "Casa 115" },
+			Destaque: 3,
+		} ,
+		{
+			Tipo: "casa",
+			Endereço: Endereco{
+				Rua: "QSC chac 26",
+			},
+			Preço: "R$ 100.000",
+			Fotos: Foto{
+				Url: "https://imganuncios.mitula.net/vendo_casa_7930033519397919311.jpg",
+				Descrição: "Painel solar" },
+			Destaque: 2,
+		},
+		{
+			Tipo: "casa",
+			Endereço: Endereco{
+				Rua: "Rua dos Bobos, número 0",
+			},
+			Preço: "R$ 100.008",
+			Fotos: Foto{
+				Url: "https://admin.iconvet.ecrm.cl/files/bms_vivienda/662/casa%20quillay%202.jpg",
+				Descrição: "Casa bonita" },
+			Destaque: 1,
+		},
+		{
+			Tipo: "casa",
+			Endereço: Endereco{
+				Rua: "Rua dos Bobos, número 0",
+			},
+			Preço: "R$ 430.000",
+			Fotos: Foto{
+				Url: "https://admin.iconvet.ecrm.cl/files/bms_vivienda/662/casa%20quillay%202.jpg",
+				Descrição: "Castelo Grande" },
+			Destaque: 1,
+		},
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(imoveis)
+}
+
 // listContent retorna uma lista de informações básicas dos conteúdos cadastrados
 func listContent() []PageInfo {
 	pages := []PageInfo{}
@@ -354,6 +416,7 @@ func loginForm(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", viewPage)
+	http.HandleFunc("/imoveis/", imoveisList)
 	http.HandleFunc("/knock-knock/", loginForm)
 	http.HandleFunc("/api/", api)
 	http.HandleFunc("/edit/", editPage)
@@ -362,5 +425,4 @@ func main() {
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("app"))))
 	http.Handle("/vc_components/", http.StripPrefix("/vc_components/", http.FileServer(http.Dir("app/vc_components"))))
 	log.Fatal(http.ListenAndServe(":8080", nil))
-	println("Server is up and running.")
 }
