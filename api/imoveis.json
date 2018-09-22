@@ -1,0 +1,7 @@
+{
+	type: "imoveis",
+	cidade,
+	comodos: {
+		tipo,
+	}
+}
